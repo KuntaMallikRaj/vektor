@@ -17,7 +17,8 @@ def l2_squared(query: np.ndarray, vectors: np.ndarray) -> np.ndarray:
     Why *squared*? Taking the square root never changes which vector is closest,
     so we skip it and save work. (Think about why that's true.)
     """
-    raise NotImplementedError
+    # (a - b) for every vector -> square each difference -> add up each row
+    return ((vectors - query) ** 2).sum(axis=1)
 
 
 def cosine_distance(query: np.ndarray, vectors: np.ndarray) -> np.ndarray:
@@ -25,5 +26,10 @@ def cosine_distance(query: np.ndarray, vectors: np.ndarray) -> np.ndarray:
 
     Same direction -> 0, perpendicular -> 1, opposite -> 2.
     Only direction matters, not length: [1, 1] and [5, 5] have distance 0.
+    An all-zero vector has no direction; it gets distance 1 (unrelated) instead of NaN.
     """
-    raise NotImplementedError
+    # cos(angle) = (a · b) / (|a| * |b|)  — dot product divided by both lengths
+    dots = vectors @ query
+    lengths = np.linalg.norm(vectors, axis=1) * np.linalg.norm(query)
+    lengths = np.where(lengths == 0, 1.0, lengths)  # avoid dividing by zero
+    return 1.0 - dots / lengths
